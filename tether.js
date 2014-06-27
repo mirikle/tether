@@ -11,8 +11,42 @@
   }
 }(this, function(require,exports,module) {
 
+/**
+ * getComputedStyle function for IE8
+ * borrowed from:
+ * http://missouristate.info/scripts/2013/common.js
+ */
+"getComputedStyle" in window || function() {
+  function c(a, b, g, e) {
+    var h = b[g];
+    b = parseFloat(h);
+    h = h.split(/\d/)[0];
+    e = null !== e ? e : /%|em/.test(h) && a.parentElement ? c(a.parentElement, a.parentElement.currentStyle, "fontSize", null) : 16;
+    a = "fontSize" == g ? e : /width/i.test(g) ? a.clientWidth : a.clientHeight;
+    return "em" == h ? b * e : "in" == h ? 96 * b : "pt" == h ? 96 * b / 72 : "%" == h ? b / 100 * a : b;
+  }
+  function a(a, c) {
+    var b = "border" == c ? "Width" : "", e = c + "Top" + b, h = c + "Right" + b, l = c + "Bottom" + b, b = c + "Left" + b;
+    a[c] = (a[e] == a[h] == a[l] == a[b] ? [a[e]] : a[e] == a[l] && a[b] == a[h] ? [a[e], a[h]] : a[b] == a[h] ? [a[e], a[h], a[l]] : [a[e], a[h], a[l], a[b]]).join(" ");
+  }
+  function b(b) {
+    var d, g = b.currentStyle, e = c(b, g, "fontSize", null);
+    for (d in g) {
+      /width|height|margin.|padding.|border.+W/.test(d) && "auto" !== this[d] ? this[d] = c(b, g, d, e) + "px" : "styleFloat" === d ? this["float"] = g[d] : this[d] = g[d];
+    }
+    a(this, "margin");
+    a(this, "padding");
+    a(this, "border");
+    this.fontSize = e + "px";
+    return this;
+  }
+  b.prototype = {};
+  window.getComputedStyle = function(a) {
+    return new b(a);
+  };
+}();
 (function() {
-  var Evented, addClass, defer, deferred, extend, flush, getBounds, getOffsetParent, getOrigin, getScrollBarSize, getScrollParent, hasClass, node, removeClass, uniqueId, updateClasses, zeroPosCache,
+  var Evented, addClass, defer, deferred, extend, fixIE8, flush, getBounds, getOffsetParent, getOrigin, getScrollBarSize, getScrollParent, hasClass, node, removeClass, uniqueId, updateClasses, zeroPosCache,
     __hasProp = {}.hasOwnProperty,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     __slice = [].slice;
@@ -189,7 +223,7 @@
       }
       return _results;
     } else {
-      return el.className = el.className.replace(new RegExp("(^| )" + (name.split(' ').join('|')) + "( |$)", 'gi'), ' ');
+      return el.setAttribute('class', el.getAttribute('class').replace(new RegExp("(^| )" + (name.split(' ').join('|')) + "( |$)", 'gi'), ' '));
     }
   };
 
@@ -325,6 +359,15 @@
 
   })();
 
+  fixIE8 = function() {
+    if (window.pageXOffset == null) {
+      window.pageYOffset = window.pageYOffset != null ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+      window.pageXOffset = window.pageXOffset != null ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+      window.innerHeight = $(window).height();
+      return window.innerWidth = $(window).width();
+    }
+  };
+
   this.Tether.Utils = {
     getScrollParent: getScrollParent,
     getBounds: getBounds,
@@ -338,13 +381,14 @@
     flush: flush,
     uniqueId: uniqueId,
     Evented: Evented,
-    getScrollBarSize: getScrollBarSize
+    getScrollBarSize: getScrollBarSize,
+    fixIE8: fixIE8
   };
 
 }).call(this);
 
 (function() {
-  var MIRROR_LR, MIRROR_TB, OFFSET_MAP, Tether, addClass, addOffset, attachmentToOffset, autoToFixedAttachment, defer, extend, flush, getBounds, getOffsetParent, getOuterSize, getScrollBarSize, getScrollParent, getSize, now, offsetToPx, parseAttachment, parseOffset, position, removeClass, tethers, transformKey, updateClasses, within, _Tether, _ref,
+  var MIRROR_LR, MIRROR_TB, OFFSET_MAP, Tether, addClass, addOffset, attachmentToOffset, autoToFixedAttachment, defer, extend, fixIE8, flush, getBounds, getOffsetParent, getOuterSize, getScrollBarSize, getScrollParent, getSize, now, offsetToPx, parseAttachment, parseOffset, position, removeClass, tethers, transformKey, updateClasses, within, _Tether, _ref,
     __slice = [].slice,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -354,7 +398,7 @@
 
   Tether = this.Tether;
 
-  _ref = Tether.Utils, getScrollParent = _ref.getScrollParent, getSize = _ref.getSize, getOuterSize = _ref.getOuterSize, getBounds = _ref.getBounds, getOffsetParent = _ref.getOffsetParent, extend = _ref.extend, addClass = _ref.addClass, removeClass = _ref.removeClass, updateClasses = _ref.updateClasses, defer = _ref.defer, flush = _ref.flush, getScrollBarSize = _ref.getScrollBarSize;
+  _ref = Tether.Utils, getScrollParent = _ref.getScrollParent, getSize = _ref.getSize, getOuterSize = _ref.getOuterSize, getBounds = _ref.getBounds, getOffsetParent = _ref.getOffsetParent, extend = _ref.extend, addClass = _ref.addClass, removeClass = _ref.removeClass, updateClasses = _ref.updateClasses, defer = _ref.defer, flush = _ref.flush, getScrollBarSize = _ref.getScrollBarSize, fixIE8 = _ref.fixIE8;
 
   within = function(a, b, diff) {
     if (diff == null) {
@@ -417,7 +461,7 @@
     _results = [];
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       event = _ref1[_i];
-      _results.push(window.addEventListener(event, tick));
+      _results.push($(window).on(event, tick));
     }
     return _results;
   })();
@@ -597,6 +641,7 @@
 
     _Tether.prototype.getTargetBounds = function() {
       var bounds, fitAdj, hasBottomScroll, height, out, scrollBottom, scrollPercentage, style, target;
+      fixIE8();
       if (this.targetModifier != null) {
         switch (this.targetModifier) {
           case 'visible':
@@ -698,7 +743,7 @@
       addClass(this.element, this.getClass('enabled'));
       this.enabled = true;
       if (this.scrollParent !== document) {
-        this.scrollParent.addEventListener('scroll', this.position);
+        $(this.scrollParent).on('scroll', this.position);
       }
       if (position) {
         return this.position();
@@ -710,7 +755,7 @@
       removeClass(this.element, this.getClass('enabled'));
       this.enabled = false;
       if (this.scrollParent != null) {
-        return this.scrollParent.removeEventListener('scroll', this.position);
+        return $(this.scrollParent).off('scroll', this.position);
       }
     };
 
@@ -784,6 +829,7 @@
       if (!this.enabled) {
         return;
       }
+      fixIE8();
       this.clearCache();
       targetAttachment = autoToFixedAttachment(this.targetAttachment, this.attachment);
       this.updateAttachClasses(this.attachment, targetAttachment);

@@ -1,5 +1,5 @@
 (function() {
-  var Evented, addClass, defer, deferred, extend, flush, getBounds, getOffsetParent, getOrigin, getScrollBarSize, getScrollParent, hasClass, node, removeClass, uniqueId, updateClasses, zeroPosCache,
+  var Evented, addClass, defer, deferred, extend, fixIE8, flush, getBounds, getOffsetParent, getOrigin, getScrollBarSize, getScrollParent, hasClass, node, removeClass, uniqueId, updateClasses, zeroPosCache,
     __hasProp = {}.hasOwnProperty,
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; },
     __slice = [].slice;
@@ -312,6 +312,15 @@
 
   })();
 
+  fixIE8 = function() {
+    if (window.pageXOffset == null) {
+      window.pageYOffset = window.pageYOffset != null ? window.pageYOffset : (document.documentElement || document.body.parentNode || document.body).scrollTop;
+      window.pageXOffset = window.pageXOffset != null ? window.pageXOffset : (document.documentElement || document.body.parentNode || document.body).scrollLeft;
+      window.innerHeight = $(window).height();
+      return window.innerWidth = $(window).width();
+    }
+  };
+
   this.Tether.Utils = {
     getScrollParent: getScrollParent,
     getBounds: getBounds,
@@ -325,7 +334,8 @@
     flush: flush,
     uniqueId: uniqueId,
     Evented: Evented,
-    getScrollBarSize: getScrollBarSize
+    getScrollBarSize: getScrollBarSize,
+    fixIE8: fixIE8
   };
 
 }).call(this);

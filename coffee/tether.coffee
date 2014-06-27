@@ -3,7 +3,7 @@ if not @Tether?
 
 Tether = @Tether
 
-{getScrollParent, getSize, getOuterSize, getBounds, getOffsetParent, extend, addClass, removeClass, updateClasses, defer, flush, getScrollBarSize} = Tether.Utils
+{getScrollParent, getSize, getOuterSize, getBounds, getOffsetParent, extend, addClass, removeClass, updateClasses, defer, flush, getScrollBarSize, fixIE8} = Tether.Utils
 
 within = (a, b, diff=1) ->
   a + diff >= b >= a - diff
@@ -55,7 +55,7 @@ do ->
     lastDuration = now() - lastCall
 
   for event in ['resize', 'scroll', 'touchmove']
-    window.addEventListener event, tick
+    $(window).on(event, tick)
 
 MIRROR_LR =
   center: 'center'
@@ -195,6 +195,7 @@ class _Tether
       @enable(position)
 
   getTargetBounds: ->
+    fixIE8()
     if @targetModifier?
       switch @targetModifier
         when 'visible'
@@ -290,7 +291,7 @@ class _Tether
     @enabled = true
 
     if @scrollParent isnt document
-      @scrollParent.addEventListener 'scroll', @position
+      $(@scrollParent).on('scroll', @position)
 
     if position
       @position()
@@ -301,7 +302,7 @@ class _Tether
     @enabled = false
 
     if @scrollParent?
-      @scrollParent.removeEventListener 'scroll', @position
+      $(@scrollParent).off('scroll', @position)
 
   destroy: ->
     @disable()
@@ -343,6 +344,8 @@ class _Tether
     # tethers (in which case call Tether.Utils.flush yourself when you're done)
 
     return unless @enabled
+
+    fixIE8()
 
     @clearCache()
 

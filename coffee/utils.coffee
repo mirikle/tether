@@ -208,4 +208,11 @@ class Evented
         else
           i++
 
-@Tether.Utils = {getScrollParent, getBounds, getOffsetParent, extend, addClass, removeClass, hasClass, updateClasses, defer, flush, uniqueId, Evented, getScrollBarSize}
+fixIE8 = ->
+  if not window.pageXOffset?
+    window.pageYOffset = if window.pageYOffset? then window.pageYOffset else (document.documentElement || document.body.parentNode || document.body).scrollTop
+    window.pageXOffset = if window.pageXOffset? then window.pageXOffset else (document.documentElement || document.body.parentNode || document.body).scrollLeft
+    window.innerHeight = $(window).height()
+    window.innerWidth = $(window).width()
+
+@Tether.Utils = {getScrollParent, getBounds, getOffsetParent, extend, addClass, removeClass, hasClass, updateClasses, defer, flush, uniqueId, Evented, getScrollBarSize, fixIE8}

@@ -1,5 +1,5 @@
 (function() {
-  var MIRROR_LR, MIRROR_TB, OFFSET_MAP, Tether, addClass, addOffset, attachmentToOffset, autoToFixedAttachment, defer, extend, flush, getBounds, getOffsetParent, getOuterSize, getScrollBarSize, getScrollParent, getSize, now, offsetToPx, parseAttachment, parseOffset, position, removeClass, tethers, transformKey, updateClasses, within, _Tether, _ref,
+  var MIRROR_LR, MIRROR_TB, OFFSET_MAP, Tether, addClass, addOffset, attachmentToOffset, autoToFixedAttachment, defer, extend, fixIE8, flush, getBounds, getOffsetParent, getOuterSize, getScrollBarSize, getScrollParent, getSize, now, offsetToPx, parseAttachment, parseOffset, position, removeClass, tethers, transformKey, updateClasses, within, _Tether, _ref,
     __slice = [].slice,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
@@ -9,7 +9,7 @@
 
   Tether = this.Tether;
 
-  _ref = Tether.Utils, getScrollParent = _ref.getScrollParent, getSize = _ref.getSize, getOuterSize = _ref.getOuterSize, getBounds = _ref.getBounds, getOffsetParent = _ref.getOffsetParent, extend = _ref.extend, addClass = _ref.addClass, removeClass = _ref.removeClass, updateClasses = _ref.updateClasses, defer = _ref.defer, flush = _ref.flush, getScrollBarSize = _ref.getScrollBarSize;
+  _ref = Tether.Utils, getScrollParent = _ref.getScrollParent, getSize = _ref.getSize, getOuterSize = _ref.getOuterSize, getBounds = _ref.getBounds, getOffsetParent = _ref.getOffsetParent, extend = _ref.extend, addClass = _ref.addClass, removeClass = _ref.removeClass, updateClasses = _ref.updateClasses, defer = _ref.defer, flush = _ref.flush, getScrollBarSize = _ref.getScrollBarSize, fixIE8 = _ref.fixIE8;
 
   within = function(a, b, diff) {
     if (diff == null) {
@@ -72,7 +72,7 @@
     _results = [];
     for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
       event = _ref1[_i];
-      _results.push(window.addEventListener(event, tick));
+      _results.push($(window).on(event, tick));
     }
     return _results;
   })();
@@ -252,6 +252,7 @@
 
     _Tether.prototype.getTargetBounds = function() {
       var bounds, fitAdj, hasBottomScroll, height, out, scrollBottom, scrollPercentage, style, target;
+      fixIE8();
       if (this.targetModifier != null) {
         switch (this.targetModifier) {
           case 'visible':
@@ -353,7 +354,7 @@
       addClass(this.element, this.getClass('enabled'));
       this.enabled = true;
       if (this.scrollParent !== document) {
-        this.scrollParent.addEventListener('scroll', this.position);
+        $(this.scrollParent).on('scroll', this.position);
       }
       if (position) {
         return this.position();
@@ -365,7 +366,7 @@
       removeClass(this.element, this.getClass('enabled'));
       this.enabled = false;
       if (this.scrollParent != null) {
-        return this.scrollParent.removeEventListener('scroll', this.position);
+        return $(this.scrollParent).off('scroll', this.position);
       }
     };
 
@@ -439,6 +440,7 @@
       if (!this.enabled) {
         return;
       }
+      fixIE8();
       this.clearCache();
       targetAttachment = autoToFixedAttachment(this.targetAttachment, this.attachment);
       this.updateAttachClasses(this.attachment, targetAttachment);

@@ -24,8 +24,8 @@ gulp.task 'coffee', ->
     .pipe(gulp.dest('./docs/welcome/js/'))
 
 gulp.task 'concat', ->
-  gulp.src(['./js/utils.js', './js/tether.js', './js/constraint.js', './js/abutment.js', './js/shift.js'])
-    .pipe(concat('tether.js'))
+  gulp.src(['./3rd/*.js', './js/utils.js', './js/tether.js', './js/constraint.js', './js/abutment.js', './js/shift.js'])
+    .pipe(concat('../Bobcat/app/assets/javascripts/bobcat/services/_tether/tether.js'))
     .pipe(wrap(
       namespace: 'Tether'
       exports: 'this.Tether'
@@ -43,7 +43,7 @@ gulp.task 'uglify', ->
 gulp.task 'js', ->
   gulp.run 'coffee', ->
     gulp.run 'concat', ->
-      gulp.run 'uglify', ->
+      # gulp.run 'uglify', ->
 
 gulp.task 'compass', ->
   for path in ['', 'docs/', 'docs/welcome/']
@@ -56,10 +56,10 @@ gulp.task 'compass', ->
       .pipe(gulp.dest("./#{ path }css"))
 
 gulp.task 'default', ->
-  gulp.run 'js', 'compass'
+  gulp.run 'js'#, 'compass'
 
   gulp.watch './**/*.coffee', ->
     gulp.run 'js'
 
-  gulp.watch './**/*.sass', ->
-    gulp.run 'compass'
+  # gulp.watch './**/*.sass', ->
+  #   gulp.run 'compass'
